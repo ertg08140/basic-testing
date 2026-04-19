@@ -106,8 +106,6 @@ describe('readFileAsynchronously', () => {
 
     const result = await readFileAsynchronously('./index.ts');
 
-    const jResult = join('index.ts');
-    console.log('jr', jResult);
     expect(result).toBe('string');
   });
 });
