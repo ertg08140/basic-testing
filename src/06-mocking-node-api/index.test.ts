@@ -23,8 +23,6 @@ jest.mock('fs/promises', () => ({
   readFile: jest.fn(),
 }));
 
-console.log('join', join);
-
 const delay = 500;
 
 describe('doStuffByTimeout', () => {
