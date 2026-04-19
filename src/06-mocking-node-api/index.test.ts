@@ -1,5 +1,29 @@
 // Uncomment the code below and write your tests
-// import { readFileAsynchronously, doStuffByTimeout, doStuffByInterval } from '.';
+import { doStuffByInterval, doStuffByTimeout, readFileAsynchronously } from '.';
+import { join } from 'path';
+import * as fs from 'fs';
+import { readFile } from 'fs/promises';
+
+jest.mock('path', () => {
+  const actualPath = jest.requireActual('path');
+  return {
+    __esModule: true,
+    ...actualPath,
+    join: jest.fn((...args) => {
+      return actualPath.join(...args);
+    }),
+  };
+});
+
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
+}));
+
+jest.mock('fs/promises', () => ({
+  readFile: jest.fn(),
+}));
+
+const delay = 500;
 
 describe('doStuffByTimeout', () => {
   beforeAll(() => {
@@ -11,11 +35,25 @@ describe('doStuffByTimeout', () => {
   });
 
   test('should set timeout with provided callback and timeout', () => {
-    // Write your test here
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    const callback = jest.fn();
+
+    doStuffByTimeout(callback, delay);
+    expect(setTimeoutSpy).toHaveBeenCalledWith(callback, delay);
+    setTimeoutSpy.mockRestore();
   });
 
   test('should call callback only after timeout', () => {
-    // Write your test here
+    const callback = jest.fn();
+
+    doStuffByTimeout(callback, delay);
+
+    expect(callback).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(delay);
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 });
 
@@ -29,24 +67,45 @@ describe('doStuffByInterval', () => {
   });
 
   test('should set interval with provided callback and timeout', () => {
-    // Write your test here
+    const setIntervalSpy = jest.spyOn(global, 'setInterval');
+    const callback = jest.fn();
+
+    doStuffByInterval(callback, delay);
+    expect(setIntervalSpy).toHaveBeenCalledWith(callback, delay);
+    setIntervalSpy.mockRestore();
   });
 
   test('should call callback multiple times after multiple intervals', () => {
-    // Write your test here
+    const callback = jest.fn();
+
+    doStuffByInterval(callback, delay);
+
+    jest.advanceTimersByTime(3 * delay);
+    expect(callback).toHaveBeenCalledTimes(3);
   });
 });
 
 describe('readFileAsynchronously', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
   test('should call join with pathToFile', async () => {
-    // Write your test here
+    await readFileAsynchronously('./index.ts');
+    expect(join).toHaveBeenCalled();
   });
 
   test('should return null if file does not exist', async () => {
-    // Write your test here
+    const result = await readFileAsynchronously('./does_not_exist.ts');
+    expect(result).toBeNull();
   });
 
   test('should return file content if file exists', async () => {
-    // Write your test here
+    const mockContent = Buffer.from('string');
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+    (readFile as jest.Mock).mockResolvedValue(mockContent);
+
+    const result = await readFileAsynchronously('./index.ts');
+
+    expect(result).toBe('string');
   });
 });
