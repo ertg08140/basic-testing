@@ -2,8 +2,7 @@
 import { mockOne, mockThree, mockTwo, unmockedFunction } from './index';
 
 jest.mock('./index', () => {
-  const originalModule =
-    jest.requireActual<typeof import('./index')>('./index');
+  const originalModule = jest.requireActual('./index');
   return {
     ...originalModule,
     mockOne: jest.fn(),
